@@ -21,7 +21,7 @@ class modelAgendamento {
             $save->bindParam(":id_servico", $id_servico);
             $save->bindParam(":data", $data_agendamento);
             $save->bindParam(":hora", $hora);
-            $save->bindParam(":taxi", $taxi, PDO::PARAM_BOOL); // Adicionei PDO::PARAM_BOOL para garantir que o valor booleano seja tratado corretamente
+            $save->bindParam(":taxi", $taxi, PDO::PARAM_BOOL);
             $save->execute();
         
             return true;
@@ -49,18 +49,40 @@ class modelAgendamento {
     }
 
     
-    public function searchById(){
+    public function searchById($id){
         try{
-           return true;
+            $id =  filter_var($id,FILTER_SANITIZE_NUMBER_INT);
+            $conn = connectionDB::connect();
+            $prepare = $conn->prepare("SELECT * FROM agendamento WHERE id = :id");
+            $prepare->bindParam(":id",$id);
+            $prepare->execute();
+            $result = $prepare->fetchAll(PDO::FETCH_ASSOC);
+
+        
+           return $result;
         }catch(PDOException $e){
             return false;
         }
     }
 
     
-    public function update(){
+    public function update($id, $data){
         try{
-      
+            $id =  filter_var($id,FILTER_SANITIZE_NUMBER_INT);
+            $id_servico = filter_var($data["id_servico"], FILTER_SANITIZE_NUMBER_INT);
+            $data_agendamento = htmlspecialchars($data["data"], ENT_NOQUOTES);
+            $hora = htmlspecialchars($data["hora"], ENT_NOQUOTES);
+            $taxi = filter_var($data["taxi"], FILTER_VALIDATE_BOOLEAN);
+
+            $conn = connectionDB::connect();
+            $update = $conn->prepare("UPDATE agendamento SET id_servico = :id_servico, data = :data_agendamento, hora = :hora, taxi = :taxi WHERE id = :id");
+            $update->bindParam(":id", $id);
+            $update->bindParam(":id_servico", $id_servico);
+            $update->bindParam(":data",$data_agendamento);
+            $update->bindParam(":hora",$hora);
+            $update->bindParam(":taxi",$taxi);
+            $update->execute();
+
                   return true;
         }catch(PDOException $e){
             return false;
