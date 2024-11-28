@@ -3,32 +3,24 @@
 require_once("../services/connectionDB.php");
 
 
-class modelAgendamento {
+class modelAgendamento_servico {
     public function save($data){
         try {
-            // Verifique se $data é um array
-            if (!is_array($data)) {
-                throw new Exception("Os dados fornecidos não são um array.");
-            }
         
+            $id_agendamento = filter_var($data["id_agendamento"], FILTER_SANITIZE_NUMBER_INT);
             $id_servico = filter_var($data["id_servico"], FILTER_SANITIZE_NUMBER_INT);
-            $data_agendamento = htmlspecialchars($data["data"], ENT_NOQUOTES);
-            $hora = htmlspecialchars($data["hora"], ENT_NOQUOTES);
-            $taxi = filter_var($data["taxi"], FILTER_VALIDATE_BOOLEAN);
+            $id_pet = filter_var($data["id_pet"], FILTER_SANITIZE_NUMBER_INT);
         
             $conn = connectionDB::connect();
-            $save = $conn->prepare("INSERT INTO agendamento(id_servico, data, hora, taxi) VALUES (:id_servico, :data, :hora, :taxi)");
+            $save = $conn->prepare("INSERT INTO agendamento_servico(id_agendamento, id_servico, id_pet) VALUES (:id_agendamento,:id_servico,:id_pet)");
+            $save->bindParam(":id_agendamento",$id_agendamento);
             $save->bindParam(":id_servico", $id_servico);
-            $save->bindParam(":data", $data_agendamento);
-            $save->bindParam(":hora", $hora);
-            $save->bindParam(":taxi", $taxi, PDO::PARAM_BOOL);
+            $save->bindParam(":id_pet",$id_pet);
             $save->execute();
         
             return true;
         } catch (PDOException $e) {
-            return false;
-        } catch (Exception $e) {
-            // Captura exceções gerais
+            echo $e;
             return false;
         }
 
@@ -39,7 +31,7 @@ class modelAgendamento {
     public function listAll(){
         try{
             $conn = connectionDB::connect();
-            $list = $conn->query("SELECT * FROM agendamento");
+            $list = $conn->query("SELECT * FROM agendamento_servico");
             $result = $list->fetchAll(PDO::FETCH_ASSOC);
            
             return $result;
@@ -53,13 +45,13 @@ class modelAgendamento {
         try{
             $id =  filter_var($id,FILTER_SANITIZE_NUMBER_INT);
             $conn = connectionDB::connect();
-            $prepare = $conn->prepare("SELECT  servico.tipo_servico AS Tipo, 
-            servico.descricao AS Descricao, 
-            servico.preco, 
-            agendamento.data AS Data, 
-            agendamento.hora, 
-            agendamento.taxi FROM servico 
-            INNER JOIN agendamento ON agendamento.id_servico = servico.id WHERE agendamento.id_servico = :id;");
+            $prepare = $conn->prepare("SELECT  servico.tipo_servico AS Servico,
+             servico.descricao AS Descricao, 
+             servico.preco, 
+             agendamento.data AS Data, 
+             agendamento.hora,
+              agendamento.taxi,
+              pets.nome, pets.sexo FROM servico INNER JOIN agendamento ON agendamento.id_servico = servico.id WHERE agendamento.id_servico = :id;");
             $prepare->bindParam(":id",$id);
             $prepare->execute();
             $result = $prepare->fetchAll(PDO::FETCH_ASSOC);
