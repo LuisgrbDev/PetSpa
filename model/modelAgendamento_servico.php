@@ -45,13 +45,21 @@ class modelAgendamento_servico {
         try{
             $id =  filter_var($id,FILTER_SANITIZE_NUMBER_INT);
             $conn = connectionDB::connect();
-            $prepare = $conn->prepare("SELECT  servico.tipo_servico AS Servico,
-             servico.descricao AS Descricao, 
-             servico.preco, 
-             agendamento.data AS Data, 
-             agendamento.hora,
-              agendamento.taxi,
-              pets.nome, pets.sexo FROM servico INNER JOIN agendamento ON agendamento.id_servico = servico.id WHERE agendamento.id_servico = :id;");
+            $prepare = $conn->prepare("SELECT  
+            servico.tipo_servico AS Servico,
+            servico.descricao AS Descricao, 
+            servico.preco, 
+            agendamento.data AS Data, 
+            agendamento.hora,
+            agendamento.taxi,
+            pets.nome AS NomePet, 
+            pets.sexo AS SexoPet
+        FROM 
+            agendamento_servico
+            INNER JOIN servico ON agendamento_servico.id_servico = servico.id
+            INNER JOIN agendamento ON agendamento_servico.id_agendamento = agendamento.id
+            INNER JOIN pets ON agendamento_servico.id_pet = pets.id;
+        WHERE id_agendamento = :id ");
             $prepare->bindParam(":id",$id);
             $prepare->execute();
             $result = $prepare->fetchAll(PDO::FETCH_ASSOC);
@@ -66,22 +74,6 @@ class modelAgendamento_servico {
     
     public function update($id, $data){
         try{
-            
-            $id =  filter_var($id,FILTER_SANITIZE_NUMBER_INT);
-            $id_servico = filter_var($data["id_servico"], FILTER_SANITIZE_NUMBER_INT);
-            $data_agendamento = htmlspecialchars($data["data"], ENT_NOQUOTES);
-            $hora = htmlspecialchars($data["hora"], ENT_NOQUOTES);
-            $taxi = filter_var($data["taxi"], FILTER_VALIDATE_BOOLEAN);
-
-            $conn = connectionDB::connect();
-            $update = $conn->prepare("UPDATE agendamento SET id_servico = :id_servico, data = :data_agendamento, hora = :hora, taxi = :taxi WHERE id = :id");
-            $update->bindParam(":id", $id);
-            $update->bindParam(":id_servico", $id_servico);
-            $update->bindParam(":data_agendamento",$data_agendamento);
-            $update->bindParam(":hora",$hora);
-            $update->bindParam(":taxi",$taxi);
-            $update->execute();
-
                   return true;
         }catch(PDOException $e){
             //echo $e;
@@ -96,7 +88,7 @@ class modelAgendamento_servico {
             $id = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
 
             $conn = connectionDB::connect();
-            $delete = $conn->prepare("DELETE FROM agendamento  WHERE id = :id");
+            $delete = $conn->prepare("DELETE FROM agendamento_servico WHERE id = :id");
             $delete->bindParam(":id", $id);
             $delete->execute();
     
