@@ -27,8 +27,10 @@ class controllerPets {
 
     public function searchById($id) {
         try {
+            
             $modelPets = new modelPets();
             return $modelPets->searchById($id);
+
         } catch (PDOException $e) {
             return false;
         }
@@ -54,16 +56,11 @@ class controllerPets {
 
     public function update($id, $data) {
         try {
-            // Verificando se os dados de entrada são válidos
-            if (empty($data["nome"]) || empty($data["sexo"]) || empty($data["nascimento"]) || empty($data["castrado"])) {
-                throw new Exception("Missing required fields");
-            }
-    
+            
             $modelPets = new modelPets();
             return $modelPets->update($id, $data);
-        } catch (Exception $e) {
-            // Log do erro
-            error_log($e->getMessage());
+
+        } catch (PDOException $e) {
             return false;
         }
     }

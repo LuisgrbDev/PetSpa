@@ -105,7 +105,7 @@ class modelPets {
             $conn = connectionDB::connect();
             
             // Preparando a consulta SQL para atualizar os dados
-            $update = $conn->prepare("UPDATE user SET nome = :nome, sexo = :sexo, nascimento = :nascimento, castrado = :castrado WHERE id = :id");
+            $update = $conn->prepare("UPDATE pets SET nome = :nome, sexo = :sexo, nascimento = :nascimento, castrado = :castrado WHERE id = :id");
             
             // Usando a variável correta no bindParam
             $update->bindParam(':nome', $nome_completo);
@@ -123,7 +123,5 @@ class modelPets {
             return false; // Retorna false se houver erro
         }
     }
-     
-
 
 }
